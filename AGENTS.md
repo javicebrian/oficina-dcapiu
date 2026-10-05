@@ -126,7 +126,8 @@ rather than running vite alongside it. `#debug` in the URL exposes
 - **2026-10-05 — The two small bedrooms are children's rooms** (owner: the plan's
   2 × 2 singles and a desk squeezed into dormitorio 3's strip made little
   sense). Each has one single bed with its head to the north wall in the
-  north-east corner, a desk with shelves on the north wall, a chair, a low
-  bookcase and a round rug (`KidRoom`). Dormitorio 2 is the boy's (navy, teal,
+  north-east corner, a desk with shelves on the north wall, a chair and a
+  round rug (`KidRoom`); a low bookcase in dormitorio 2 only (the one in
+  dormitorio 3's strip by the door was in the way, owner). Dormitorio 2 is the boy's (navy, teal,
   mustard), dormitorio 3 the girl's (lilac, coral, blush, a beanbag by the
   door). Which room is whose is our choice.

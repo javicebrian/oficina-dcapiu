@@ -310,13 +310,13 @@ function Beanbag({ x, y, m }: { x: number; y: number; m: THREE.Material }) {
   )
 }
 
-/** A child's bedroom: bed, desk and chair, low bookcase, round rug. Footprints in scan pixels. */
+/** A child's bedroom: bed, desk and chair, round rug, and a low bookcase if it fits. Footprints in scan pixels. */
 function KidRoom({ palette: p, bed, desk, chair, shelf, rug }: {
   palette: Palette
   bed: [number, number, number, number] // head to the north wall
   desk: [number, number, number, number] // against the north wall
   chair: [number, number, number, number] // facing north, to the desk
-  shelf: [number, number, number, number, Side]
+  shelf?: [number, number, number, number, Side]
   rug: [number, number, number] // centre and radius
 }) {
   const r = at(rug[0], rug[1], 0)
@@ -325,7 +325,7 @@ function KidRoom({ palette: p, bed, desk, chair, shelf, rug }: {
       {A(...bed, 'n', (w, d) => <KidBed w={w} d={d} p={p} />)}
       {A(...desk, 'n', (w, d) => <Desk w={w} d={d} p={p} />)}
       {A(...chair, 's', () => <Chair shell={p.accent} />)}
-      {A(...shelf, (w, d) => <LowShelf w={w} d={d} p={p} />)}
+      {shelf && A(...shelf, (w, d) => <LowShelf w={w} d={d} p={p} />)}
       <mesh position={[r[0], 0.008, r[2]]} material={p.rug} receiveShadow>
         <cylinderGeometry args={[c(pxLen(rug[2])), c(pxLen(rug[2])), 0.008, 40]} />
       </mesh>
@@ -360,7 +360,6 @@ function Bedrooms() {
         bed={[948, 892, 1040, 1087]}
         desk={[805, 892, 935, 952]}
         chair={[848, 955, 893, 1000]}
-        shelf={[640, 1118, 770, 1150, 's']}
         rug={[870, 1065, 50]}
       />
       {A(552, 1012, 695, 1062, 'n', (w, d) => <Wardrobe w={w} d={d} doors={2} />)}
