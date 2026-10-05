@@ -40,6 +40,7 @@ const VIEWS: [ViewName, string][] = [
   ['top', 'Planta'],
   ['kitchen', 'Cocina'],
   ['terrace', 'Terraza'],
+  ['street', 'Calle'],
 ]
 
 function Section({ title, children, collapsible = false, defaultOpen = true, extra }: {

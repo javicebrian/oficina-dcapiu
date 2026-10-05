@@ -44,6 +44,8 @@ export const LEVELS = {
   doorHead: 210,
   windowHead: 215,
   railing: 100, // terrace balustrade
+  storey: 300, // floor to floor, for the storeys below (assumed)
+  street: -615, // the flat is on the second floor: two storeys and a step below
 }
 // Section-cut slider maximum: at this height nothing is clipped.
 export const FULL_HEIGHT = LEVELS.slabTop
@@ -222,3 +224,28 @@ export const AREAS = {
   useful: rooms.filter((r) => r.use !== 'outdoor').reduce((s, r) => s + areaM2(r.poly), 0),
   terrace: areaM2(rooms.find((r) => r.id === 'terraza')!.poly),
 }
+
+// --- The building ------------------------------------------------------------------
+// From the small key plan on the same sheet ("Planta Segunda", Escalera 1):
+// the flat is the hatched south-east corner of a C-shaped block open to the
+// west. That plan is at about 11.3 cm per scan pixel (the hatched flat is
+// 60 × 119 px for its 6.8 × 13.3 m), and is placed so its hatched corner
+// lands on the flat's outline. Only the outline is used; the street, the
+// trees and the courtyard round it are made up.
+const KEY = 11.3 // cm per pixel on the key plan
+const key = (x: number, y: number): Pt => [r1(OUTLINE[0] + (x - 1340) * KEY), r1(OUTLINE[1] + (y - 1291) * KEY)]
+
+const [WX, NY] = key(1112, 862) // west and north faces of the block
+const [SWX, YARD_Y] = key(1140, 1060) // the south wing's west face; the courtyard's north side
+const [MIDX] = key(1270, 0) // the courtyard's east side
+const [FX0, FY0, FX1, FY1] = OUTLINE
+
+/** The whole block in plan, outside faces. The flat's outline is its south-east corner. */
+export const BUILDING: Pt[] = [
+  [WX, NY], [FX1, NY], [FX1, FY1], [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
+]
+
+/** The second floor without this flat: the neighbours, as a plain volume. */
+export const NEIGHBOURS: Pt[] = [
+  [WX, NY], [FX1, NY], [FX1, FY0], [FX0, FY0], [FX0, FY1], [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
+]

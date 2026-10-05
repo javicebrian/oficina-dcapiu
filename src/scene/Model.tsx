@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { LEVELS, OUTLINE, TERRACE, openings, rectPts, walls } from '../data/flat'
 import type { Opening, Pt } from '../data/flat'
-import { prism, segmentBox, sh } from './geometry'
+import { prism, segmentBox } from './geometry'
 import { M } from './materials'
 import { blocker } from './picking'
 
@@ -89,10 +89,6 @@ export function Model({ showCeiling }: { showCeiling: boolean }) {
 
   return (
     <group {...blocker}>
-      {/* the table the model stands on */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, sh(-LEVELS.floorSlab) - 0.01, 0]} material={M.world} receiveShadow>
-        <planeGeometry args={[200, 200]} />
-      </mesh>
       <Solid geometry={geo.floorSlab} material={M.slab} />
       <Solid geometry={geo.terraceSlab} material={M.slab} />
 

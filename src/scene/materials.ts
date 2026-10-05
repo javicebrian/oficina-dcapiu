@@ -69,7 +69,6 @@ export const M = {
   ledOff: std('#e4e1da', { roughness: 0.3 }), // the same, off: frosted white
   termo: std('#f7f7f5', { roughness: 0.3 }),
   termoBlue: std('#2f6fb3', { roughness: 0.4 }),
-  world: new THREE.MeshStandardMaterial({ color: '#e8e5de', roughness: 1 }),
 }
 
 // The same materials without the section cut, for furniture: cutting the
@@ -82,9 +81,10 @@ function unclipped<T extends THREE.Material>(m: T): T {
 export const F = Object.fromEntries(Object.entries(M).map(([k, m]) => [k, unclipped(m)])) as typeof M
 
 // The building takes part in the selected room's cutaway (cutaway.ts):
-// walls, lintels, doors, windows. The ground does not, nor furniture (F).
+// walls, lintels, doors, windows. The slab does not, nor furniture (F), nor
+// the building round the flat (Surroundings.tsx, its own materials).
 // Walls keep a stub, and their poché turns wall-coloured, so a cut looks solid.
-const GROUND: THREE.Material[] = [M.world, M.slab]
+const GROUND: THREE.Material[] = [M.slab]
 const WALL_INSIDE = new THREE.Color('#e9e6e0') // the wall colour, a touch shaded
 for (const m of Object.values(M)) {
   if (GROUND.includes(m)) continue

@@ -25,7 +25,7 @@ export const DEFAULTS: UrlState = {
   panel: matchMedia('(min-width: 640px)').matches,
 }
 
-const VIEW_PARAM: Record<ViewName, string> = { aerial: 'aerea', top: 'planta', kitchen: 'cocina', terrace: 'terraza' }
+const VIEW_PARAM: Record<ViewName, string> = { aerial: 'aerea', top: 'planta', kitchen: 'cocina', terrace: 'terraza', street: 'calle' }
 const FLAGS = { ceiling: 'techo', labels: 'rotulos', furniture: 'mobiliario', panel: 'controles' } as const
 
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()

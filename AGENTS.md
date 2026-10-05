@@ -66,11 +66,14 @@ src/
     sun.ts, Sun.tsx      Real sun over Bormujos; sky from day to night.        } changed
     floorTexture.ts      Oak planks, bathroom porcelain, terrace tile (canvas textures).
     Rooms.tsx            Clickable floors and DOM labels.
-    Compass.tsx          N/S/E/O on the table round the model.
+    Surroundings.tsx     The rest of the block (storeys below, neighbours on this floor),
+                         two streets, pavements, trees. Plain, unclipped, not cut away.
+    Compass.tsx          N/S/E/O: N and O on the neighbours' roof, E and S on the streets.
     Viewer.tsx           Canvas, camera presets, cut plane, contexts.
   ui/                    Sidebar, room card, title block.
   App.tsx                State: ceiling, cut, labels, selection, doors, lights, sun.
-  urlState.ts            Opening state from and to the link (?vista, techo, rotulos,
+  urlState.ts            Opening state from and to the link (?vista=aerea|planta|cocina|
+                         terraza|calle, techo, rotulos,
                          mobiliario, controles).
 ```
 
@@ -133,3 +136,13 @@ rather than running vite alongside it. `#debug` in the URL exposes
   the way (owner). Dormitorio 2 is the boy's (navy, teal,
   mustard), dormitorio 3 the girl's (lilac, coral, blush, a beanbag by the
   door). Which room is whose is our choice.
+- **2026-10-05 — The building and the street** (owner: show it is a second floor,
+  simply, the flat staying the subject). The block's outline is the key plan
+  on the same sheet (`BUILDING` in `flat.ts`, about 11.3 cm per pixel, placed by
+  the hatched flat): two storeys below as a solid with rows of windows, the
+  neighbours on this floor as a volume up to our ceiling and no storeys above
+  (the block is cut at this floor, like a model). Storeys 3.00 m, street at
+  −6.15 m. Streets on the east and south and the courtyard and trees are made
+  up; no trees in front of the flat's own façades. The camera may now look up
+  from below the horizontal ("Calle" view); the street plane is a collider in
+  CameraControls so it never goes under it.

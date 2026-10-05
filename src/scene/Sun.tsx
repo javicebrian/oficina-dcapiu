@@ -43,7 +43,8 @@ export function Sun({ at }: { at: number }) {
       <fog attach="fog" args={[s.sky, 100, 220]} />
       <hemisphereLight args={['#ffffff', '#c9c3b5', s.hemi]} />
       {/* Aimed at the plot centre (the light's default target, the origin).
-          The shadow box covers the flat and its terrace from any direction. */}
+          The shadow box covers the flat, its terrace and the street below it from
+          any direction; the rest of the block falls outside, unshadowed. */}
       <directionalLight
         position={s.position}
         intensity={s.intensity}
@@ -52,10 +53,10 @@ export function Sun({ at }: { at: number }) {
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.02}
-        shadow-camera-left={-11}
-        shadow-camera-right={11}
-        shadow-camera-top={11}
-        shadow-camera-bottom={-11}
+        shadow-camera-left={-17}
+        shadow-camera-right={17}
+        shadow-camera-top={17}
+        shadow-camera-bottom={-17}
         shadow-camera-near={1}
         shadow-camera-far={70}
       />

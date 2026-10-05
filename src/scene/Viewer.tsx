@@ -13,10 +13,11 @@ import { LightsContext } from './Lights'
 import type { LightSwitches } from './Lights'
 import { cutPlane } from './materials'
 import { Model } from './Model'
+import { EAST_ROAD, ROAD, SOUTH_ROAD, Surroundings, groundRef } from './Surroundings'
 import { Rooms } from './Rooms'
 import { Sun } from './Sun'
 
-export type ViewName = 'aerial' | 'top' | 'kitchen' | 'terrace'
+export type ViewName = 'aerial' | 'top' | 'kitchen' | 'terrace' | 'street'
 
 // Scene point of a scan pixel at height h (cm).
 const P = (x: number, y: number, h: number) => {
@@ -28,10 +29,12 @@ const MZ = (sz(OUTLINE[1]) + sz(TERRACE[3])) / 2
 
 // [camera xyz, target xyz]
 const VIEWS: Record<ViewName, [number, number, number, number, number, number]> = {
-  aerial: [6.5, 17, MZ + 10, 0, 0, MZ], // from the south-east, steep enough to see into the rooms
+  aerial: [9, 15, MZ + 15, 0, -1.5, MZ], // from the south-east, steep enough to see into the rooms and the drop to the street
   top: [0, 30, MZ, 0, 0, MZ], // straight down; orientation and height set by framed()
   kitchen: [...P(690, 1545, 650), ...P(840, 1200, 50)], // from over the salón, steep enough to clear the partition (render 1)
   terrace: [...P(640, 2350, 420), ...P(720, 1500, 100)], // from the south, over the terrace
+  // standing in the crossing south-east of the flat, looking up at its corner
+  street: [sx(EAST_ROAD + ROAD * 0.6), sh(LEVELS.street + 170), sz(SOUTH_ROAD + ROAD * 0.6), sx(OUTLINE[2] - 250), 1.2, sz(OUTLINE[3] - 400)],
 }
 
 export interface ViewRequest {
@@ -77,7 +80,9 @@ function framed(view: ViewName, aspect: number) {
     const h = Math.max(up / t, across / (t * aspect)) + 3
     return aspect < 1 ? ([px, h, pz + 0.01, tx, ty, tz] as const) : ([px - 0.01, h, pz, tx, ty, tz] as const)
   }
-  if (view === 'kitchen') return VIEWS.kitchen
+  // Views from inside or below are placed exactly: backing off would go
+  // through a wall or under the street.
+  if (view === 'kitchen' || view === 'street') return VIEWS[view]
   const k = Math.min(2.4, Math.max(1, 1.5 / aspect))
   return [tx + (px - tx) * k, ty + (py - ty) * k, tz + (pz - tz) * k, tx, ty, tz] as const
 }
@@ -107,6 +112,10 @@ function CameraRig({ request }: { request: ViewRequest }) {
       },
     }
   }, [invalidate, get])
+  // The street stops the camera (effects run after the whole tree mounts).
+  useEffect(() => {
+    if (ref.current && groundRef.current) ref.current.colliderMeshes = [groundRef.current]
+  }, [])
   useEffect(() => {
     const c = ref.current
     if (!c) return
@@ -134,7 +143,9 @@ function CameraRig({ request }: { request: ViewRequest }) {
       makeDefault
       minDistance={2}
       maxDistance={120}
-      maxPolarAngle={Math.PI / 2 - 0.04}
+      // Below the horizontal too, for looking up from the street; the ground
+      // plane is a collider, so the camera never goes under it.
+      maxPolarAngle={Math.PI * 0.72}
       dollySpeed={0.6}
       smoothTime={0.35}
     />
@@ -227,6 +238,7 @@ export function Viewer(p: Props) {
       <CameraRig request={p.request} />
       <RoomFocus room={p.focused} />
       <Model showCeiling={ceiling} />
+      <Surroundings />
       <Rooms
         selected={p.selected}
         hovered={p.hovered}
