@@ -311,20 +311,21 @@ function Beanbag({ x, y, m }: { x: number; y: number; m: THREE.Material }) {
 }
 
 /** A child's bedroom: bed, desk and chair, round rug, and a low bookcase if it fits. Footprints in scan pixels. */
-function KidRoom({ palette: p, bed, desk, chair, shelf, rug }: {
+function KidRoom({ palette: p, wall, bed, desk, chair, shelf, rug }: {
   palette: Palette
-  bed: [number, number, number, number] // head to the north wall
-  desk: [number, number, number, number] // against the north wall
-  chair: [number, number, number, number] // facing north, to the desk
+  wall: 'n' | 's' // the wall the bed's head and the desk stand against
+  bed: [number, number, number, number]
+  desk: [number, number, number, number]
+  chair: [number, number, number, number] // facing the desk
   shelf?: [number, number, number, number, Side]
   rug: [number, number, number] // centre and radius
 }) {
   const r = at(rug[0], rug[1], 0)
   return (
     <>
-      {A(...bed, 'n', (w, d) => <KidBed w={w} d={d} p={p} />)}
-      {A(...desk, 'n', (w, d) => <Desk w={w} d={d} p={p} />)}
-      {A(...chair, 's', () => <Chair shell={p.accent} />)}
+      {A(...bed, wall, (w, d) => <KidBed w={w} d={d} p={p} />)}
+      {A(...desk, wall, (w, d) => <Desk w={w} d={d} p={p} />)}
+      {A(...chair, wall === 'n' ? 's' : 'n', () => <Chair shell={p.accent} />)}
       {shelf && A(...shelf, (w, d) => <LowShelf w={w} d={d} p={p} />)}
       <mesh position={[r[0], 0.008, r[2]]} material={p.rug} receiveShadow>
         <cylinderGeometry args={[c(pxLen(rug[2])), c(pxLen(rug[2])), 0.008, 40]} />
@@ -343,20 +344,23 @@ function Bedrooms() {
       {A(645, 357, 705, 545, 'w', (w, d) => <Wardrobe w={w} d={d} doors={3} />)}
       {P(790, 455, 1010, 615, 0.4, 1.2, F.rug, false)}
 
-      {/* Dormitorio 2, the boy's: bed in the north-east corner, a desk on the north wall */}
+      {/* Dormitorio 2, the boy's: the girl's room mirrored across the wall they
+          share, so bed and desk stand against that wall, back to back with hers */}
       <KidRoom
         palette={{ cover: F.navy, accent: F.mustard, wood: F.teal, rug: F.teal }}
-        bed={[948, 650, 1040, 845]}
-        desk={[790, 650, 925, 710]}
-        chair={[835, 712, 880, 757]}
-        shelf={[810, 845, 935, 880, 's']}
-        rug={[868, 795, 55]}
+        wall="s"
+        bed={[948, 685, 1040, 880]}
+        desk={[805, 820, 935, 880]}
+        chair={[848, 773, 893, 818]}
+        shelf={[810, 648, 935, 683, 'n']}
+        rug={[868, 738, 48]}
       />
       {A(548, 745, 750, 805, 's', (w, d) => <Wardrobe w={w} d={d} doors={3} />)}
 
       {/* Dormitorio 3, the girl's: the same, mirrored in colour; a beanbag in the strip by the door */}
       <KidRoom
         palette={{ cover: F.lilac, accent: F.coral, wood: F.coral, rug: F.blush }}
+        wall="n"
         bed={[948, 892, 1040, 1087]}
         desk={[805, 892, 935, 952]}
         chair={[848, 955, 893, 1000]}
