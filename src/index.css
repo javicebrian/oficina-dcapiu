@@ -1,0 +1,195 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --color-canvas: #eef0f2;
+  --color-ink: #1d1d1f;
+  --color-muted: #5f636b;
+  --color-line: rgb(60 60 67 / 0.12); /* iOS separator */
+  --color-hover: rgb(255 255 255 / 0.45);
+  --color-accent: #e08a3c; /* selection in the model */
+  --color-accent-soft: #fbe9d8;
+  --color-tint: #0a84ff; /* system blue: slider fill */
+  --color-on: #34c759; /* system green: switches */
+}
+
+/*
+ * "Liquid Glass" controls, after Apple's 2025 design language: translucent
+ * material that blurs and saturates what is behind it, a specular rim lit
+ * from the top-left, soft depth shadow, capsule shapes.
+ */
+@layer components {
+  .glass {
+    position: relative;
+    isolation: isolate;
+    border-radius: 22px;
+    /* Denser than Apple's "clear" glass: these panels are mostly text, and must
+       stay legible over a busy model and where backdrop blur is unavailable. */
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.5));
+    backdrop-filter: blur(24px) saturate(1.8) brightness(1.04);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(1.04);
+    box-shadow:
+      0 12px 32px rgb(15 20 30 / 0.14),
+      0 1px 3px rgb(15 20 30 / 0.08),
+      inset 0 1px 0 rgb(255 255 255 / 0.7),
+      inset 0 -1px 1px rgb(255 255 255 / 0.25);
+    /* the rim: a 1px gradient border, brightest where the light hits */
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(145deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.2) 30%, rgb(255 255 255 / 0.05) 60%, rgb(255 255 255 / 0.55));
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass { background: rgb(250 250 252 / 0.94); }
+  }
+
+  /* Scrolling inside a glass panel. Classic (always-on) scrollbars are square
+     and would poke out of the rounded corners: make it a thin capsule on a
+     transparent track that stops short of the corners. The panel itself
+     clips (overflow: hidden), so nothing can stick out anyway. */
+  .glass-scroll {
+    &::-webkit-scrollbar { width: 11px; }
+    &::-webkit-scrollbar-track { background: transparent; margin-block: 18px; }
+    &::-webkit-scrollbar-thumb {
+      background: rgb(60 60 67 / 0.28);
+      border-radius: 999px;
+      border: 3px solid transparent;
+      background-clip: content-box;
+    }
+    &::-webkit-scrollbar-thumb:hover { background-color: rgb(60 60 67 / 0.45); }
+  }
+  @supports (-moz-appearance: none) {
+    .glass-scroll { scrollbar-width: thin; scrollbar-color: rgb(60 60 67 / 0.28) transparent; }
+  }
+
+  /* Capsule button in the same material, a little lighter */
+  .glass-btn {
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    background: rgb(255 255 255 / 0.42);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), inset 0 0 0 0.5px rgb(255 255 255 / 0.5), 0 1px 2px rgb(15 20 30 / 0.08);
+    transition: background-color 150ms, transform 150ms;
+    &:hover { background: rgb(255 255 255 / 0.65); }
+    &:active { transform: scale(0.96); }
+  }
+
+  /* Segmented control: a recessed capsule, the chosen item a raised lens */
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgb(118 118 128 / 0.14);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.06);
+    & > button {
+      border-radius: 999px;
+      padding: 0.35rem 0.25rem;
+      font-size: 0.75rem;
+      color: var(--color-ink);
+      transition: background-color 200ms, box-shadow 200ms, transform 150ms;
+      &:hover { background: rgb(255 255 255 / 0.35); }
+      &:active { transform: scale(0.96); }
+      &[aria-pressed='true'] {
+        font-weight: 600;
+        background: rgb(255 255 255 / 0.9);
+        box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.06), inset 0 1px 0 rgb(255 255 255 / 1);
+      }
+    }
+  }
+
+  /* iOS switch */
+  .switch {
+    appearance: none;
+    flex: none;
+    width: 2.65rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: rgb(120 120 128 / 0.22);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 200ms;
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fff, #f4f4f6);
+      box-shadow: 0 3px 8px rgb(0 0 0 / 0.15), 0 1px 1px rgb(0 0 0 / 0.16), inset 0 0 0 0.5px rgb(0 0 0 / 0.04);
+      transition: transform 250ms cubic-bezier(0.3, 1.4, 0.5, 1), width 150ms;
+    }
+    &:active::after { width: 1.65rem; }
+    &:checked { background: var(--color-on); }
+    &:checked::after { transform: translateX(1.05rem); }
+    &:checked:active::after { transform: translateX(0.75rem); }
+  }
+
+  /* Slider: thin track, tinted up to the value (--fill), glass pill thumb */
+  .range {
+    appearance: none;
+    width: 100%;
+    height: 1.5rem;
+    background: transparent;
+    cursor: pointer;
+    --track: linear-gradient(90deg, var(--color-tint) var(--fill, 50%), rgb(120 120 128 / 0.22) var(--fill, 50%));
+    &::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: var(--track); }
+    &::-moz-range-track { height: 4px; border-radius: 999px; background: var(--track); }
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 2.1rem;
+      height: 1.4rem;
+      margin-top: calc(2px - 0.7rem);
+      border-radius: 999px;
+      background: rgb(255 255 255 / 0.92);
+      box-shadow: 0 3px 10px rgb(0 0 0 / 0.16), 0 1px 1px rgb(0 0 0 / 0.1), inset 0 1px 0 #fff;
+      transition: transform 150ms;
+    }
+    &::-moz-range-thumb {
+      width: 2.1rem;
+      height: 1.4rem;
+      border: none;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 0.92);
+      box-shadow: 0 3px 10px rgb(0 0 0 / 0.16), 0 1px 1px rgb(0 0 0 / 0.1);
+    }
+    &:active::-webkit-slider-thumb { transform: scale(1.12); }
+  }
+
+  /* Room labels, drawn by drei <Html> over the floors: small glass pills */
+  .room-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 1.15;
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.55);
+    backdrop-filter: blur(10px) saturate(1.6);
+    -webkit-backdrop-filter: blur(10px) saturate(1.6);
+    border-radius: 10px;
+    padding: 3px 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.8), inset 0 0 0 0.5px rgb(255 255 255 / 0.6);
+    user-select: none;
+    & .name { font-weight: 500; }
+    & .area { color: var(--color-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+    &.hover { background: rgb(255 255 255 / 0.85); }
+    &.selected { background: rgb(224 138 60 / 0.88); color: white; & .area { color: rgb(255 255 255 / 0.85); } }
+  }
+}
+
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: var(--font-sans); background: var(--color-canvas); -webkit-font-smoothing: antialiased; }
