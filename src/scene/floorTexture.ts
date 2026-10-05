@@ -151,5 +151,7 @@ const once = (key: string, make: () => THREE.Texture) => {
 export const woodTexture = () => once('wood', () => draw({ h: 31, s: 40, l: 56, spread: 9, grout: '#9c8b76' }, 7, true))
 /** 60 × 60 pale grey porcelain, for the bathrooms. */
 export const tileTexture = () => once('tile', () => tiles(60, { h: 30, s: 6, l: 86, spread: 3, grout: '#c9c6c0' }, 3))
+/** 40 × 40 warm grey stone, for the common corridor and landing. */
+export const stoneTexture = () => once('stone', () => tiles(40, { h: 35, s: 8, l: 80, spread: 4, grout: '#b8b1a6' }, 9))
 /** 45 × 45 matt outdoor tile, for the terrace. */
 export const outdoorTexture = () => once('outdoor', () => tiles(45, { h: 28, s: 10, l: 72, spread: 5, grout: '#a49e94' }, 5))

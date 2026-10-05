@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { areaM2, rooms } from '../data/flat'
 import type { Room } from '../data/flat'
 import { centroid, flat, sx, sz } from './geometry'
-import { outdoorTexture, tileTexture, woodTexture } from './floorTexture'
+import { outdoorTexture, stoneTexture, tileTexture, woodTexture } from './floorTexture'
 import { SELECT_TINT } from './materials'
 import { isFrontmost } from './picking'
 import { m2 } from '../ui/format'
@@ -25,7 +25,7 @@ function RoomFloor({ room, state, cut, onSelect, onHover }: {
   const geometry = useMemo(() => flat(room.poly, 0.5), [room])
   // Oak in the dry rooms, porcelain tiles in the bathrooms and on the
   // terrace; selection tints it.
-  const map = room.floor === 'tile' ? tileTexture() : room.floor === 'outdoor' ? outdoorTexture() : woodTexture()
+  const map = { tile: tileTexture, outdoor: outdoorTexture, stone: stoneTexture, wood: woodTexture }[room.floor]()
   const color = state === 'selected' ? SELECT_TINT : '#ffffff'
   return (
     <mesh

@@ -38,7 +38,7 @@ export function Compass() {
       { ch: 'N', pos: [cx, roof, z0 - GAP] },
       { ch: 'S', pos: [cx, street, z1 + 5 + 6] },
       { ch: 'E', pos: [x1 + 4.5 + 6, street, cz] },
-      { ch: 'O', pos: [x0 - GAP, roof, cz] },
+      { ch: 'O', pos: [x0 - GAP - 4.5, roof, cz + 3] }, // clear of the landing
     ].map((l) => ({
       ...l,
       material: new THREE.MeshBasicMaterial({ map: letterTexture(l.ch), transparent: true, opacity: 0.75, depthWrite: false }),

@@ -120,7 +120,7 @@ rather than running vite alongside it. `#debug` in the URL exposes
   kitchen, where the plan draws a light rectangle. Render 1 hides that
   partition, as renders do.
 - **2026-10-05 — Heights not on the plan:** ceiling 2.60, doors 2.10, windows
-  0.90–2.15 (kitchen sill 1.05 over the worktop, en-suite 1.10). Kitchen tall
+  0.90–2.15 (kitchen sill 1.05 over the worktop). Kitchen tall
   units and wall cupboards top out at 2.25, as in the renders.
 - **2026-10-05 — Metals are barely metallic** (metalness ≤ 0.4): there is no
   environment map, and a truly metallic fridge renders black.
@@ -146,3 +146,12 @@ rather than running vite alongside it. `#debug` in the URL exposes
   up; no trees in front of the flat's own façades. The camera may now look up
   from below the horizontal ("Calle" view); the street plane is a collider in
   CameraControls so it never goes under it.
+- **2026-10-05 — The common corridor and landing** (owner). From the key plan:
+  a ~1.1 m corridor down the west side of the east wing opening into a landing
+  west of the flat, onto which the front door opens (`COMMON`, `LIFT`, `STAIR` in
+  `flat.ts`), cut out of the neighbours' volume. Stone floor, a lift with steel
+  doors, a two-flight stair going up and cut at the ceiling (turned 180° from
+  the first layout, owner), two ceiling lights ("Rellano"). It is a clickable
+  room, "Zona común", left out of the flat's useful area.
+- **2026-10-05 — No window in the en-suite** (owner). The sheet draws something
+  on its west wall, but that wall gives onto the common landing.

@@ -9,6 +9,7 @@ const USE: Record<RoomUse, string> = {
   wet: 'Zona húmeda',
   hall: 'Distribuidor',
   outdoor: 'Exterior',
+  common: 'Zona común del edificio',
 }
 
 interface Props {

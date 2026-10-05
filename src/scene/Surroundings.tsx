@@ -1,15 +1,16 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { BUILDING, LEVELS, NEIGHBOURS, OUTLINE } from '../data/flat'
+import { BUILDING, COMMON, LEVELS, LIFT, NEIGHBOURS, OUTLINE, STAIR, rectPts } from '../data/flat'
 import type { Pt } from '../data/flat'
 import { prism, sh, sx, sz } from './geometry'
 import { blocker } from './picking'
 
 // The rest of the block and the street round it, kept plain so the flat
 // stays the subject: the two storeys below as a solid with rows of windows,
-// the neighbours on this floor as a volume up to the ceiling (the block is
-// cut there, like a model), pavements, two streets and some trees. None of
+// the neighbours on this floor as volumes up to the ceiling (the block is
+// cut there, like a model) with the common corridor and landing left open,
+// the lift and the stair on the landing, pavements, two streets and trees. None of
 // it is clipped by the section cut nor takes part in the cutaway; it only
 // blocks clicks.
 
@@ -26,6 +27,8 @@ const S = {
   grass: mat('#a9b88d'),
   trunk: mat('#6b5442'),
   leaves: mat('#ffffff', 0.9), // tinted per tree
+  stone: mat('#dcd6cb', 0.7), // stair treads
+  steel: mat('#b9bec3', 0.4), // lift doors
 }
 
 const STREET = LEVELS.street
@@ -47,19 +50,21 @@ function inside([x, y]: Pt, poly: Pt[]) {
 
 /**
  * Window panes on every outside face of `poly`, one storey: about one every
- * 3.5 m, 1.4 × 1.4 m, sill 0.95 above `floor` (cm). `skip` drops faces that
- * are not outside (where the flat stands). Returns one merged geometry.
+ * 3.5 m, 1.4 × 1.4 m, sill 0.95 above `floor` (cm). Faces that look into
+ * one of `indoors` (the flat, the common corridor) are not façades and get
+ * none. Returns one merged geometry.
  */
-function windows(poly: Pt[], floor: number, skip: (a: Pt, b: Pt) => boolean = () => false) {
+function windows(poly: Pt[], floor: number, indoors: Pt[][] = []) {
   const parts: THREE.BufferGeometry[] = []
   poly.forEach((a, i) => {
     const b = poly[(i + 1) % poly.length]
-    if (skip(a, b)) return
     const L = Math.hypot(b[0] - a[0], b[1] - a[1])
     const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L
     let nx = -uy, ny = ux
     const mid: Pt = [(a[0] + b[0]) / 2 + nx * 20, (a[1] + b[1]) / 2 + ny * 20]
     if (inside(mid, poly)) [nx, ny] = [-nx, -ny]
+    const out: Pt = [(a[0] + b[0]) / 2 + nx * 30, (a[1] + b[1]) / 2 + ny * 30]
+    if (indoors.some((q) => inside(out, q))) return
     const n = Math.floor(L / 350)
     for (let k = 0; k < n; k++) {
       const s = (L / n) * (k + 0.5)
@@ -150,6 +155,61 @@ function CentreLine({ a, b }: { a: Pt; b: Pt }) {
   return <mesh geometry={geometry} material={S.paint} />
 }
 
+/** The lift: a shaft up to the cut, two brushed-steel doors to the landing. */
+function Lift() {
+  const [, y0, x1, y1] = LIFT
+  const geometry = useMemo(() => prism(rectPts(LIFT), 0, LEVELS.slabTop), [])
+  const cy = (y0 + y1) / 2
+  return (
+    <>
+      <mesh geometry={geometry} material={[S.roof, S.facade]} castShadow receiveShadow />
+      <mesh position={[sx(x1) + 0.012, sh(105), sz(cy)]} material={S.steel}>
+        <boxGeometry args={[0.02, 2.1, 0.9]} />
+      </mesh>
+      <mesh position={[sx(x1) + 0.024, sh(105), sz(cy)]} material={S.glass}>
+        <boxGeometry args={[0.004, 2.1, 0.01]} />
+      </mesh>
+      <mesh position={[sx(x1) + 0.02, sh(110), sz(cy - 70)]} material={S.glass}>
+        <boxGeometry args={[0.02, 0.12, 0.06]} />
+      </mesh>
+    </>
+  )
+}
+
+/**
+ * The stair, going up: the first flight rises southwards on the east side
+ * to a half-landing, the second comes back north on the west side, cut at
+ * the ceiling like the rest of the block; a wall between the flights.
+ * (Laid out the other way round, then turned 180° about the stairwell's
+ * centre, owner's call.)
+ */
+function Stair() {
+  const g = useMemo(() => {
+    const { x0, x1, y0, y1, run, rise } = STAIR
+    const mid = (x0 + x1) / 2
+    const n = Math.floor((y1 - y0 - 110) / run) // steps per flight; ~1.1 m of half-landing
+    const parts: THREE.BufferGeometry[] = []
+    // half a turn about the stairwell's centre
+    const turn = ([a, b, c, d]: [number, number, number, number]): [number, number, number, number] => [x0 + x1 - c, y0 + y1 - d, x0 + x1 - a, y0 + y1 - b]
+    const box = (r: [number, number, number, number], h0: number, h1: number) => parts.push(prism(rectPts(turn(r)), h0, h1))
+    for (let i = 0; i < n; i++) box([x0, y1 - (i + 1) * run, mid - 5, y1 - i * run], 0, (i + 1) * rise)
+    const top = n * rise
+    box([x0, y0, x1, y1 - n * run], top - 20, top) // half-landing
+    for (let i = 0; i < n; i++) {
+      const h = top + (i + 1) * rise
+      if (h > LEVELS.slabTop) break
+      box([mid + 5, y1 - n * run + i * run, x1, y1 - n * run + (i + 1) * run], h - 20, h)
+    }
+    return { treads: mergeGeometries(parts), wall: prism(rectPts(turn([mid - 5, y1 - n * run, mid + 5, y1])), 0, LEVELS.slabTop) }
+  }, [])
+  return (
+    <>
+      <mesh geometry={g.treads} material={S.stone} castShadow receiveShadow />
+      <mesh geometry={g.wall} material={[S.roof, S.facade]} castShadow receiveShadow />
+    </>
+  )
+}
+
 /** The ground plane: the camera stops at it (Viewer passes it to the controls as a collider). */
 export const groundRef: { current: THREE.Mesh | null } = { current: null }
 
@@ -157,17 +217,13 @@ export function Surroundings() {
   const geo = useMemo(() => {
     const top = -LEVELS.floorSlab // underside of this floor's slab
     const ground = STREET + LEVELS.storey
-    const onFlat = (a: Pt, b: Pt) => {
-      // the neighbours' faces against the flat are party walls, not façades
-      const onX = (p: Pt) => Math.abs(p[0] - FX0) < 1 && p[1] >= FY0 - 1
-      const onY = (p: Pt) => Math.abs(p[1] - FY0) < 1 && p[0] >= FX0 - 1
-      return (onX(a) && onX(b)) || (onY(a) && onY(b))
-    }
+    const indoors = [rectPts(OUTLINE), COMMON]
     return {
       groundFloor: prism(BUILDING, STREET, ground),
       firstFloor: prism(BUILDING, ground, top),
-      neighbours: prism(NEIGHBOURS, top, LEVELS.slabTop),
-      windows: mergeGeometries([windows(BUILDING, STREET), windows(BUILDING, ground), windows(NEIGHBOURS, 0, onFlat)]),
+      neighbours: NEIGHBOURS.map((n) => prism(n, top, LEVELS.slabTop)),
+      commonSlab: prism(COMMON, top, 0),
+      windows: mergeGeometries([windows(BUILDING, STREET), windows(BUILDING, ground), ...NEIGHBOURS.map((n) => windows(n, 0, indoors))]),
     }
   }, [])
   const roads = useMemo(() => ({
@@ -205,7 +261,10 @@ export function Surroundings() {
 
       <mesh geometry={geo.groundFloor} material={[S.roof, S.plinth]} castShadow receiveShadow />
       <mesh geometry={geo.firstFloor} material={massing} castShadow receiveShadow />
-      <mesh geometry={geo.neighbours} material={massing} castShadow receiveShadow />
+      {geo.neighbours.map((g, i) => <mesh key={i} geometry={g} material={massing} castShadow receiveShadow />)}
+      <mesh geometry={geo.commonSlab} material={S.roof} receiveShadow />
+      <Lift />
+      <Stair />
       <mesh geometry={geo.windows} material={S.glass} />
       <Trees />
     </group>

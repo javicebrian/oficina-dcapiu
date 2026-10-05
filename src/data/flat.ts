@@ -54,6 +54,57 @@ export const FULL_HEIGHT = LEVELS.slabTop
 export const OUTLINE = pxRect(392, 337, 1075, 1690)
 export const TERRACE = pxRect(440, 1690, 795, 1785)
 
+// --- The building ------------------------------------------------------------------
+// From the small key plan on the same sheet ("Planta Segunda", Escalera 1):
+// the flat is the hatched south-east corner of a C-shaped block open to the
+// west. That plan is at about 11.3 cm per scan pixel (the hatched flat is
+// 60 × 119 px for its 6.8 × 13.3 m), and is placed so its hatched corner
+// lands on the flat's outline. Only the outline is used; the street, the
+// trees and the courtyard round it are made up.
+const KEY = 11.3 // cm per pixel on the key plan
+const key = (x: number, y: number): Pt => [r1(OUTLINE[0] + (x - 1340) * KEY), r1(OUTLINE[1] + (y - 1291) * KEY)]
+
+const [WX, NY] = key(1112, 862) // west and north faces of the block
+const [SWX, YARD_Y] = key(1140, 1060) // the south wing's west face; the courtyard's north side
+const [MIDX] = key(1270, 0) // the courtyard's east side
+const [FX0, FY0, FX1, FY1] = OUTLINE
+
+/** The whole block in plan, outside faces. The flat's outline is its south-east corner. */
+export const BUILDING: Pt[] = [
+  [WX, NY], [FX1, NY], [FX1, FY1], [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
+]
+
+// The common parts on this floor, from the same key plan: a corridor about
+// 1.1 m wide runs down the west side of the east wing and opens, at this
+// flat's north end, into a landing west of it, with the lift and the stair
+// on its far side. The flat's front door (6–7 m down its west wall) opens
+// onto that landing, which bears the reading out.
+const [CX0, CY0] = key(1328, 942) // corridor: west face, north end
+const [LX0] = key(1300, 0) // landing: west side
+const [HX, LY1] = px(400, 1040) // the hall's outside face; the landing's south side, at the jog in that wall
+const [SX, SY] = px(420, 1062) // below the jog, the salón's outside face
+
+/** Corridor and landing, one outline (inside faces). */
+export const COMMON: Pt[] = [[CX0, CY0], [FX0, CY0], [FX0, LY1], [LX0, LY1], [LX0, FY0], [CX0, FY0]]
+
+/** Lift shaft on the landing (solid, its doors on the east face). */
+export const LIFT: Rect = [LX0, FY0 + 40, LX0 + 170, FY0 + 290]
+/** Stairwell on the landing: two flights up, side by side, a half-landing at the north end. */
+export const STAIR = { x0: LX0, x1: LX0 + 290, y0: FY0 + 330, y1: LY1, run: 28, rise: 17 }
+
+/**
+ * The second floor round this flat: the neighbours, as plain volumes, with
+ * the corridor and the landing left open. The corridor splits them in two:
+ * the east wing north of the flat, and the rest.
+ */
+export const NEIGHBOURS: Pt[][] = [
+  [[FX0, CY0], [FX1, CY0], [FX1, FY0], [FX0, FY0]],
+  [
+    [WX, NY], [FX1, NY], [FX1, CY0], [CX0, CY0], [CX0, FY0], [LX0, FY0], [LX0, LY1], [HX, LY1], [HX, SY], [SX, SY], [SX, FY1],
+    [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
+  ],
+]
+
 // --- Walls -----------------------------------------------------------------------
 // Rectangular solids, floor to ceiling, read as the double lines on the
 // sheet. Openings are the gaps left between them; the pieces never overlap,
@@ -83,10 +134,10 @@ export const walls: Wall[] = [
   // South façade: the sliding door to the terrace between 497 and 700.
   w(420, 1665, 497, 1690),
   w(700, 1665, 1025, 1690),
-  // West: the en-suite (window to the light well), the hall with the front
-  // door to the landing, the jog where the stair core steps in, the salón.
-  w(392, 357, 410, 430),
-  w(392, 525, 410, 545),
+  // West: the en-suite (no window: the sheet hints at one, but it would open
+  // onto the common landing), the hall with the front door to the landing,
+  // the jog where the stair core steps in, the salón.
+  w(392, 357, 410, 545),
   w(400, 545, 418, 925),
   w(400, 1008, 418, 1040),
   w(400, 1040, 442, 1062),
@@ -125,7 +176,7 @@ export const walls: Wall[] = [
 // --- Openings ------------------------------------------------------------------
 // `a`–`b` runs along the wall's centreline across the gap, `t` is the wall
 // thickness. sill/head are not on the plan: doors to 210, windows 90–215
-// (kitchen 105, over the worktop; en-suite 110).
+// (kitchen 105, over the worktop).
 
 // How a door's leaves move. `side` is the side of a→b the leaf ends up on
 // when open: +1 is the direction (−dy, dx) for a→b = (dx, dy) on the plan
@@ -175,17 +226,13 @@ export const openings: Opening[] = [
   eastWindow('v-dorm3', 'Ventana del dormitorio 3', 965, 1098),
   eastWindow('v-cocina', 'Ventana de la cocina', 1205, 1315, 105),
   eastWindow('v-salon', 'Ventana del salón', 1430, 1555),
-  {
-    a: px(401, 430), b: px(401, 525), t: pxLen(18), kind: 'window', sill: 110, head: H,
-    door: { id: 'v-bano1', name: 'Ventana del baño principal', leaf: { op: 'slide', panes: 2 }, finish: 'glass' },
-  },
 ]
 
 // --- Rooms ---------------------------------------------------------------------
 // Inside faces. Areas are worked out from these outlines; the sales sheet
 // gives none.
-export type RoomUse = 'day' | 'night' | 'wet' | 'hall' | 'outdoor'
-export type FloorKind = 'wood' | 'tile' | 'outdoor'
+export type RoomUse = 'day' | 'night' | 'wet' | 'hall' | 'outdoor' | 'common'
+export type FloorKind = 'wood' | 'tile' | 'outdoor' | 'stone'
 
 export interface Room {
   id: string
@@ -207,6 +254,7 @@ export const rooms: Room[] = [
   { id: 'bano2', name: 'Baño 2', use: 'wet', floor: 'tile', poly: poly([520, 815], [790, 815], [790, 1005], [520, 1005]) },
   { id: 'dorm3', name: 'Dormitorio 3', use: 'night', floor: 'wood', poly: poly([800, 890], [1045, 890], [1045, 1150], [552, 1150], [552, 1012], [800, 1012]), label: px(900, 1030) },
   { id: 'pasillo', name: 'Recibidor y pasillo', use: 'hall', floor: 'wood', poly: poly([418, 648], [508, 648], [508, 1012], [545, 1012], [545, 1062], [442, 1062], [442, 1040], [418, 1040]), label: px(470, 900) },
+  { id: 'comun', name: 'Rellano y pasillo común', use: 'common', floor: 'stone', poly: COMMON, label: [r1((LX0 + FX0) / 2 + 60), r1(FY0 + 150)] },
   { id: 'terraza', name: 'Terraza', use: 'outdoor', floor: 'outdoor', poly: poly([440, 1690], [795, 1690], [795, 1785], [440, 1785]) },
 ]
 
@@ -221,31 +269,6 @@ export function areaM2(pts: Pt[]) {
 }
 
 export const AREAS = {
-  useful: rooms.filter((r) => r.use !== 'outdoor').reduce((s, r) => s + areaM2(r.poly), 0),
+  useful: rooms.filter((r) => r.use !== 'outdoor' && r.use !== 'common').reduce((s, r) => s + areaM2(r.poly), 0),
   terrace: areaM2(rooms.find((r) => r.id === 'terraza')!.poly),
 }
-
-// --- The building ------------------------------------------------------------------
-// From the small key plan on the same sheet ("Planta Segunda", Escalera 1):
-// the flat is the hatched south-east corner of a C-shaped block open to the
-// west. That plan is at about 11.3 cm per scan pixel (the hatched flat is
-// 60 × 119 px for its 6.8 × 13.3 m), and is placed so its hatched corner
-// lands on the flat's outline. Only the outline is used; the street, the
-// trees and the courtyard round it are made up.
-const KEY = 11.3 // cm per pixel on the key plan
-const key = (x: number, y: number): Pt => [r1(OUTLINE[0] + (x - 1340) * KEY), r1(OUTLINE[1] + (y - 1291) * KEY)]
-
-const [WX, NY] = key(1112, 862) // west and north faces of the block
-const [SWX, YARD_Y] = key(1140, 1060) // the south wing's west face; the courtyard's north side
-const [MIDX] = key(1270, 0) // the courtyard's east side
-const [FX0, FY0, FX1, FY1] = OUTLINE
-
-/** The whole block in plan, outside faces. The flat's outline is its south-east corner. */
-export const BUILDING: Pt[] = [
-  [WX, NY], [FX1, NY], [FX1, FY1], [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
-]
-
-/** The second floor without this flat: the neighbours, as a plain volume. */
-export const NEIGHBOURS: Pt[] = [
-  [WX, NY], [FX1, NY], [FX1, FY0], [FX0, FY0], [FX0, FY1], [SWX, FY1], [SWX, FY0], [MIDX, FY0], [MIDX, YARD_Y], [WX, YARD_Y],
-]

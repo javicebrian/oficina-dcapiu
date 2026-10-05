@@ -17,6 +17,7 @@ export const lights = [
   { id: 'bano1', name: 'Baño principal' },
   { id: 'bano2', name: 'Baño 2' },
   { id: 'terraza', name: 'Terraza' },
+  { id: 'rellano', name: 'Rellano' },
 ] as const
 
 export type LightId = (typeof lights)[number]['id']

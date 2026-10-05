@@ -687,6 +687,9 @@ function Lamps() {
       <Plafon id="dorm1" x={843} y={495} />
       <Plafon id="dorm2" x={790} y={745} />
       <Plafon id="dorm3" x={900} y={1020} />
+      {/* the landing outside the front door (scan pixels run on past the flat's west wall) */}
+      <Plafon id="rellano" x={300} y={520} r={20} />
+      <Plafon id="rellano" x={300} y={850} r={20} />
       <Downlights id="cocina" spots={[[680, 1275], [820, 1275], [960, 1275]]} glows={[[820, 1270]]} />
       <Downlights id="pasillo" spots={[[463, 700], [463, 830], [475, 960], [493, 1110]]} glows={[[463, 760], [480, 1040]]} />
       <Downlights id="bano1" spots={[[460, 445], [570, 465]]} glows={[[520, 450]]} intensity={5} />
