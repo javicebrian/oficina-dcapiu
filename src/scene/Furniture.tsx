@@ -174,12 +174,12 @@ function Bathroom2() {
 
 // --- Bedrooms ------------------------------------------------------------------
 
-function Bed({ w, d, double = false, cover }: { w: number; d: number; double?: boolean; cover: THREE.Material }) {
+function Bed({ w, d, double = false, cover, head }: { w: number; d: number; double?: boolean; cover: THREE.Material; head?: THREE.Material }) {
   const pillows = double ? [-w / 4, w / 4] : [0]
   const pw = double ? w / 2 - 10 : w - 18
   return (
     <>
-      <LB x={[-w / 2 - (double ? 6 : 0), w / 2 + (double ? 6 : 0)]} y={[0, double ? 115 : 95]} z={[0, 7]} m={double ? F.sofa : F.oak} />
+      <LB x={[-w / 2 - (double ? 6 : 0), w / 2 + (double ? 6 : 0)]} y={[0, double ? 115 : 95]} z={[0, 7]} m={head ?? (double ? F.sofa : F.oak)} />
       <LB x={[-w / 2, w / 2]} y={[10, 32]} z={[7, d]} m={double ? F.sofa : F.oak} />
       <LB x={[-w / 2 + 1, w / 2 - 1]} y={[32, 54]} z={[8, d - 1]} m={F.linen} />
       <LB x={[-w / 2 - 1.5, w / 2 + 1.5]} y={[28, 57]} z={[d * 0.3, d + 1.5]} m={cover} />
@@ -235,6 +235,104 @@ function Chair({ shell = F.white }: { shell?: THREE.Material }) {
   )
 }
 
+// --- Children's rooms ------------------------------------------------------------
+
+interface Palette { cover: THREE.Material; accent: THREE.Material; wood: THREE.Material; rug: THREE.Material }
+
+/** A single bed with a painted headboard, a coloured cover, a cushion and a soft toy. */
+function KidBed({ w, d, p }: { w: number; d: number; p: Palette }) {
+  return (
+    <>
+      <Bed w={w} d={d} cover={p.cover} head={p.wood} />
+      <LB x={[-w / 2 + 12, -w / 2 + 40]} y={[56, 80]} z={[38, 48]} m={p.accent} />
+      <mesh position={[c(w / 4), c(64), c(48)]} material={F.throwSand} castShadow>
+        <sphereGeometry args={[c(9), 14, 10]} />
+      </mesh>
+      <mesh position={[c(w / 4), c(78), c(46)]} material={F.throwSand} castShadow>
+        <sphereGeometry args={[c(6.5), 14, 10]} />
+      </mesh>
+    </>
+  )
+}
+
+/** Desk against a wall: white top on coloured legs, a drawer unit, a lamp, books, two shelves above. */
+function Desk({ w, d, p }: { w: number; d: number; p: Palette }) {
+  const legs = [[-w / 2 + 3, 3], [w / 2 - 3, 3], [-w / 2 + 3, d - 3], [w / 2 - 3, d - 3]]
+  const books = (x0: number, h: number, n: number) =>
+    Array.from({ length: n }, (_, i) => (
+      <LB key={i} x={[x0 + i * 3.4, x0 + i * 3.4 + 3]} y={[h, h + 18 + (i % 3) * 3]} z={[2, 18]} m={[p.accent, F.white, p.cover, p.wood][i % 4]} />
+    ))
+  return (
+    <>
+      <LB x={[-w / 2, w / 2]} y={[72, 75]} z={[0, d]} m={F.white} />
+      {legs.map(([x, z]) => <LC key={`${x},${z}`} x={x} z={z} y={[0, 72]} r={1.6} m={p.wood} seg={10} />)}
+      <LB x={[w / 2 - 40, w / 2 - 4]} y={[2, 70]} z={[2, d - 6]} m={F.white} />
+      {[20, 42].map((h) => <LB key={h} x={[w / 2 - 38, w / 2 - 6]} y={[h, h + 18]} z={[d - 6, d - 5]} m={p.accent} />)}
+      {/* lamp: base, arm, head */}
+      <LC x={-w / 2 + 14} z={12} y={[75, 77]} r={7} m={p.wood} />
+      <LC x={-w / 2 + 14} z={12} y={[77, 112]} r={0.8} m={p.wood} seg={8} />
+      <LC x={-w / 2 + 14} z={18} y={[106, 116]} r={4} r2={7} m={p.wood} />
+      {/* a closed laptop and a pile of notebooks */}
+      <LB x={[-14, 18]} y={[75, 77]} z={[12, 34]} m={F.steel} />
+      <LB x={[24, 46]} y={[75, 81]} z={[10, 40]} m={p.accent} />
+      {/* two wall shelves with books */}
+      {[118, 152].map((h) => <LB key={h} x={[-w / 2 + 6, w / 2 - 6]} y={[h - 2, h]} z={[0, 20]} m={F.white} />)}
+      {books(-w / 2 + 10, 118, 9)}
+      {books(w / 2 - 50, 152, 6)}
+    </>
+  )
+}
+
+/** Low bookcase with coloured storage boxes in its cubbies. */
+function LowShelf({ w, d, p }: { w: number; d: number; p: Palette }) {
+  const n = Math.max(2, Math.round(w / 35))
+  const cw = w / n
+  return (
+    <>
+      <LB x={[-w / 2, w / 2]} y={[0, 78]} z={[0, d]} m={F.white} />
+      {Array.from({ length: n }, (_, i) => -w / 2 + i * cw).flatMap((x0, i) => [
+        <LB key={`a${i}`} x={[x0 + 2, x0 + cw - 2]} y={[4, 36]} z={[d, d + 0.6]} m={[p.accent, p.wood, p.cover][i % 3]} />,
+        <LB key={`b${i}`} x={[x0 + 2, x0 + cw - 2]} y={[41, 74]} z={[d, d + 0.6]} m={[p.cover, p.accent, p.wood][i % 3]} />,
+      ])}
+      <mesh position={[c(-w / 4), c(88), c(d / 2)]} material={p.accent} castShadow>
+        <sphereGeometry args={[c(9), 16, 12]} />
+      </mesh>
+    </>
+  )
+}
+
+function Beanbag({ x, y, m }: { x: number; y: number; m: THREE.Material }) {
+  const p = at(x, y, 0)
+  return (
+    <mesh position={[p[0], 0.2, p[2]]} scale={[1, 0.62, 1]} material={m} castShadow receiveShadow>
+      <sphereGeometry args={[0.36, 24, 16]} />
+    </mesh>
+  )
+}
+
+/** A child's bedroom: bed, desk and chair, low bookcase, round rug. Footprints in scan pixels. */
+function KidRoom({ palette: p, bed, desk, chair, shelf, rug }: {
+  palette: Palette
+  bed: [number, number, number, number] // head to the north wall
+  desk: [number, number, number, number] // against the north wall
+  chair: [number, number, number, number] // facing north, to the desk
+  shelf: [number, number, number, number, Side]
+  rug: [number, number, number] // centre and radius
+}) {
+  const r = at(rug[0], rug[1], 0)
+  return (
+    <>
+      {A(...bed, 'n', (w, d) => <KidBed w={w} d={d} p={p} />)}
+      {A(...desk, 'n', (w, d) => <Desk w={w} d={d} p={p} />)}
+      {A(...chair, 's', () => <Chair shell={p.accent} />)}
+      {A(...shelf, (w, d) => <LowShelf w={w} d={d} p={p} />)}
+      <mesh position={[r[0], 0.008, r[2]]} material={p.rug} receiveShadow>
+        <cylinderGeometry args={[c(pxLen(rug[2])), c(pxLen(rug[2])), 0.008, 40]} />
+      </mesh>
+    </>
+  )
+}
+
 function Bedrooms() {
   return (
     <>
@@ -245,20 +343,28 @@ function Bedrooms() {
       {A(645, 357, 705, 545, 'w', (w, d) => <Wardrobe w={w} d={d} doors={3} />)}
       {P(790, 455, 1010, 615, 0.4, 1.2, F.rug, false)}
 
-      {/* Dormitorio 2: two singles, heads to the south */}
-      {A(803, 700, 893, 880, 's', (w, d) => <Bed w={w} d={d} cover={F.throwSand} />)}
-      {A(948, 700, 1040, 880, 's', (w, d) => <Bed w={w} d={d} cover={F.throwSand} />)}
-      {A(895, 842, 946, 880, 's', (w, d) => <Nightstand w={w} d={d} />)}
+      {/* Dormitorio 2, the boy's: bed in the north-east corner, a desk on the north wall */}
+      <KidRoom
+        palette={{ cover: F.navy, accent: F.mustard, wood: F.teal, rug: F.teal }}
+        bed={[948, 650, 1040, 845]}
+        desk={[790, 650, 925, 710]}
+        chair={[835, 712, 880, 757]}
+        shelf={[810, 845, 935, 880, 's']}
+        rug={[868, 795, 55]}
+      />
       {A(548, 745, 750, 805, 's', (w, d) => <Wardrobe w={w} d={d} doors={3} />)}
 
-      {/* Dormitorio 3: two singles, heads to the north; a desk in the strip by the door */}
-      {A(803, 890, 893, 1100, 'n', (w, d) => <Bed w={w} d={d} cover={F.throwSand} />)}
-      {A(948, 890, 1040, 1100, 'n', (w, d) => <Bed w={w} d={d} cover={F.throwSand} />)}
-      {A(895, 890, 946, 928, 'n', (w, d) => <Nightstand w={w} d={d} />)}
+      {/* Dormitorio 3, the girl's: the same, mirrored in colour; a beanbag in the strip by the door */}
+      <KidRoom
+        palette={{ cover: F.lilac, accent: F.coral, wood: F.coral, rug: F.blush }}
+        bed={[948, 892, 1040, 1087]}
+        desk={[805, 892, 935, 952]}
+        chair={[848, 955, 893, 1000]}
+        shelf={[640, 1118, 770, 1150, 's']}
+        rug={[870, 1065, 50]}
+      />
       {A(552, 1012, 695, 1062, 'n', (w, d) => <Wardrobe w={w} d={d} doors={2} />)}
-      {P(660, 1100, 780, 1150, 72, 75, F.white)}
-      {[[662, 1102], [775, 1102], [662, 1145], [775, 1145]].map(([x, y]) => <group key={`${x},${y}`}>{P(x, y, x + 3, y + 3, 0, 72, F.oak)}</group>)}
-      {A(697, 1068, 742, 1113, 'n', () => <Chair />)}
+      <Beanbag x={735} y={1088} m={F.lilac} />
     </>
   )
 }

@@ -53,6 +53,14 @@ export const M = {
   throwSand: std('#c9b79a', { roughness: 0.95 }), // bedspreads, the other rooms
   sofa: std('#8e8a83', { roughness: 0.95 }), // warm grey fabric
   rug: std('#d8d0c2', { roughness: 1 }),
+  // The children's rooms: navy, teal and mustard for the boy's, coral,
+  // lilac and blush for the girl's.
+  navy: std('#2f4a6d', { roughness: 0.9 }),
+  teal: std('#3f8f8a', { roughness: 0.8 }),
+  mustard: std('#e0b54a', { roughness: 0.8 }),
+  coral: std('#e98a7a', { roughness: 0.8 }),
+  lilac: std('#b9a6d6', { roughness: 0.9 }),
+  blush: std('#f2c9c4', { roughness: 0.95 }),
   plant: std('#5d7d4a', { roughness: 0.8 }),
   pot: std('#c7b8a3', { roughness: 0.8 }),
   wardrobe: std('#f2f1ee', { roughness: 0.5 }),

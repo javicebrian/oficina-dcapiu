@@ -102,7 +102,7 @@ rather than running vite alongside it. `#debug` in the URL exposes
 
 - **2026-10-05 — Scope chosen by the owner.** Same stack as abeto45, but only for
   GitHub Pages: no Home Assistant. Furnished as a home, following the plan
-  (double bed, 2 × 2 singles, L sofa, dining for six), with the renders for the
+  (double bed, L sofa, dining for six; the small rooms changed since, see below), with the renders for the
   kitchen and our own choices for the rest. Doors, windows and lights respond
   to clicks. Kept from abeto45: section cut and camera presets, room cards,
   sun. Not kept: the plan overlay.
@@ -123,3 +123,10 @@ rather than running vite alongside it. `#debug` in the URL exposes
   environment map, and a truly metallic fridge renders black.
 - **2026-10-05 — Plan view turns with the screen:** north up on portrait, east up
   on landscape, so the long flat fills either.
+- **2026-10-05 — The two small bedrooms are children's rooms** (owner: the plan's
+  2 × 2 singles and a desk squeezed into dormitorio 3's strip made little
+  sense). Each has one single bed with its head to the north wall in the
+  north-east corner, a desk with shelves on the north wall, a chair, a low
+  bookcase and a round rug (`KidRoom`). Dormitorio 2 is the boy's (navy, teal,
+  mustard), dormitorio 3 the girl's (lilac, coral, blush, a beanbag by the
+  door). Which room is whose is our choice.
