@@ -13,9 +13,9 @@ de la cocina (`docs/`). Todo es estático: no hay servidor ni integraciones.
 - Sol real sobre Bormujos a cualquier fecha y hora, o ahora mismo; techo y corte de sección.
 
 ```bash
-npm install
-npm run dev      # vite en :5178
-npm run build    # dist/
+pnpm install
+pnpm run dev     # vite en :5178
+pnpm run build   # dist/
 ```
 
 Cada push a `main` se publica en GitHub Pages (`.github/workflows/pages.yml`).

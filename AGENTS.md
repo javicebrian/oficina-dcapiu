@@ -21,8 +21,8 @@ default**:
 ```bash
 export PATH="$HOME/.local/node-v22.14.0-linux-x64/bin:$PATH"
 cd ~/workspaces/oficina-dcapiu
-npm install          # first time only
-npm run build        # type-check + production build -> dist/ + dist guard
+pnpm install         # first time only (never npm: see Decision log)
+pnpm run build       # type-check + production build -> dist/ + dist guard
 ```
 
 The dev server is owned by **pm2** (see the workspace `AGENTS.md`):
@@ -155,3 +155,12 @@ rather than running vite alongside it. `#debug` in the URL exposes
   room, "Zona común", left out of the flat's useful area.
 - **2026-10-05 — No window in the en-suite** (owner). The sheet draws something
   on its west wall, but that wall gives onto the common landing.
+- **2026-11-23 — pnpm instead of npm** (owner, for supply-chain safety).
+  `pnpm-lock.yaml` comes from `pnpm import` of the old `package-lock.json`:
+  same versions, byte-identical `dist/`. pnpm pinned through `packageManager`
+  (corepack); `pages.yml` runs `pnpm/action-setup` (reads that field) before
+  `setup-node` with `cache: pnpm`, then `pnpm install --frozen-lockfile`. pnpm
+  runs no install scripts unless listed in `pnpm.onlyBuiltDependencies`, empty
+  here (vite 8 uses rolldown, so no esbuild; `fsevents` is macOS-only). The
+  box-wide `minimum-release-age=4320` (`~/.config/pnpm/rc`) refuses versions
+  under 3 days old. Never `npm install`.
